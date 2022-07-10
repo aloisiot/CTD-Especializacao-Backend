@@ -1,0 +1,33 @@
+server:
+  port: 8083
+  servlet:
+    context-path: /series/
+
+spring:
+  application:
+    name: series-service
+  zipkin:
+    base-url: http://zipkin-service:9411/
+  data:
+    mongodb:
+      username: root
+      password: rootpassword
+      database: db_series
+      port: 27017
+      host: localhost
+
+
+eureka:
+  instance:
+    hostname: localhost
+  client:
+    registerWithEureka: true
+    fetchRegistry: true
+    serviceUrl:
+      defaultZone: http://${eureka.instance.hostname}:8761/eureka/
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: '*'

@@ -1,0 +1,100 @@
+version: '3.2'
+
+services:
+  mongodb:
+    image: mongo:latest
+    environment:
+      MONGO_INITDB_DATABASE: db_series
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: rootpassword
+    ports:
+      - 27017:27017
+    volumes:
+      - mongodb_data_container:/data/db
+
+
+  zipkin-service:
+    image: openzipkin/zipkin:2
+    container_name: zipkin-service
+    ports:
+      - 9411:9411
+
+  rabbitmq-service:
+    image: rabbitmq:3-management
+    container_name: rabbitmq-service
+    ports:
+      - 5672:5672
+      - 15672:15672
+    volumes:
+      - type: bind
+        source: ./rabbitmq-defs.json
+        target: /etc/rabbitmq/rabbitmq-defs.json
+
+  eureka-service:
+    build: eureka-service
+    container_name: eureka-service
+    depends_on:
+      - zipkin-service
+      - mongodb
+    ports:
+      - 8761:8761
+
+  config-server:
+    build: server-config
+    container_name: config-server
+    depends_on:
+      - eureka-service
+    ports:
+      - 8888:8888
+
+  movie-service:
+    build: movie-service
+    container_name: movie-service
+    depends_on:
+      - config-server
+      - mysql
+    ports:
+      - 8001:8001
+
+  catalog-service:
+    build: catalog-service
+    container_name: catalog-service
+    depends_on:
+      - config-server
+      - movie-service
+    ports:
+      - 8002:8002
+
+#  series-service:
+#    build: series-service
+#    container_name: series-service
+#    depends_on:
+#      - zipkin-service
+#      - mongodb
+#    ports:
+#      - 8003:8003
+
+  api-gateway:
+    build: api-gateway 
+    container_name: api-gateway
+    depends_on:
+      - catalog-service
+    ports:
+      - 8080:8080
+  mysql:
+    image: mysql:8.0
+    cap_add:
+      - SYS_NICE
+    restart: always
+    environment:
+      - MYSQL_DATABASE=db_movies
+      - MYSQL_ROOT_PASSWORD=mauFJcuf5dhRMQrjj
+    ports:
+      - '3307:3306'
+    volumes:
+      - mysql:/var/lib/mysql
+      - ./mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
+volumes:
+  mysql:
+    driver: local
+  mongodb_data_container:

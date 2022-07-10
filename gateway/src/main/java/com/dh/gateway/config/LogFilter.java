@@ -18,15 +18,10 @@ public class LogFilter extends AbstractGatewayFilterFactory<LogFilter.Config> {
         return (exchange, chain) -> {
             logger.info("Path request: " + exchange.getRequest().getPath());
 
-            return chain.filter(exchange).then(
-                Mono.fromRunnable(() -> {
-                    logger.info("Time response: " + Calendar.getInstance().getTime());
-                })
-            );
+            return chain.filter(exchange).then(Mono.fromRunnable(() -> {
+                logger.info("Time response: " + Calendar.getInstance().getTime());
+            }));
         };
     }
-
-    public  static class Config {
-        // config props
-    }
+    public  static class Config { /* config props */ }
 }
