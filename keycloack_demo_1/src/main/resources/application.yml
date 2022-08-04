@@ -1,0 +1,16 @@
+server:
+  port: 8081
+
+spring:
+  security:
+    oauth2:
+      client:
+        provider:
+          test:
+            issuer-uri: http://localhost:8080/auth/realms/test
+        registration:
+          test:
+            client-id: test
+            client-secret: 482afeb4-dad9-4ff5-9630-436f7b574f3b
+            redirect-uri: http://localhost:8081/login/oauth2/code/keycloak
+            authorization-grant-type: authorization_code
